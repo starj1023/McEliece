@@ -5,60 +5,6 @@
 #include<math.h>
 #include "inverse.h"
 
-int main(void) {
-
-	int Goppa[4][7] = { { 1,0,0,0,1,1,0 },{ 0,1,0,0,1,0,1 },{ 0,0,1,0,0,1,1 },{ 0,0,0,1,1,1,1 } };  //Goppa Code
-	int PublicKey[4][7]; // PublicKey
-	int Chiper[7]; //Chiper text
-	int text[4]; // Plain text
-	int(*P)[7] = MatrixPGeneration(); // Permutation Matrix as a Private Key
-	int(*S)[4] = MatrixSGeneration(); // Invertible Matrix as a Private Key
-	int(*ParrityCheck)[7] = MakeParrityCheckMatrix(Goppa); // ParrityCheck Matrix of Goppa Matrix for Decryption
-	int(*TransPoseMatrix)[3] = Transpose(ParrityCheck);
-
-	//Get InverseMatrix Of S(4X4) for Decryption
-	int InverseS[4][4];
-	int TempInverseS[25][25];
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++)
-			TempInverseS[i][j] = S[i][j];
-	int(*TempInverseS1)[25] = GenerateInverse(TempInverseS, 4);
-
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++) {
-			InverseS[i][j] = TempInverseS1[i][j];
-		}
-	//Get InverseMatrix Of P(7X7) for Decryption
-	int InverseP[7][7];
-	int TempInverseP[25][25];
-	for (int i = 0; i < 7; i++)
-		for (int j = 0; j < 7; j++)
-			TempInverseP[i][j] = P[i][j];
-	int(*TempInverseP1)[25] = GenerateInverse(TempInverseP, 7);
-
-	for (int i = 0; i < 7; i++)
-		for (int j = 0; j < 7; j++) {
-			InverseP[i][j] = TempInverseP1[i][j];
-		}
-
-	printf("Input Your Message : ");
-	for (int i = 0; i < 4; i++) {
-		scanf("%d", &text[i]);
-	}
-
-	PublicKeyGeneration(S, Goppa, P, PublicKey); //Generate Publickey using with P and S
-	Encryption(text, PublicKey, Chiper); //Encrypt Message with Publickey and intended Error
-
-	printf("\nGenerated Chipertext : ");
-	for (int i = 0; i < sizeof(Chiper) / sizeof(int); i++)
-		printf("%d ", Chiper[i]);
-	printf("\n\n");
-
-	Decryption(Chiper, InverseP, InverseS, TransPoseMatrix); // Decrypt ChiperText 
-
-	return 0;
-}
-
 //Generate Random Permutation Matrix(7X7)
 int MatrixPGeneration() {
 	int Position[7];
@@ -96,7 +42,7 @@ int MatrixSGeneration() {
 }
 
 //Generate Publickey with use Goppa Code, P Matrix and S Matrix
-PublicKeyGeneration(int S[4][4], int Goppa[4][7], int P[7][7], int PublicKey[4][7]) {
+void PublicKeyGeneration(int S[4][4], int Goppa[4][7], int P[7][7], int PublicKey[4][7]) {
 	int Scol = sizeof(S[0]) / sizeof(int);
 	int Gcol = sizeof(Goppa[0]) / sizeof(int);
 	int Pcol = sizeof(P[0]) / sizeof(int);
@@ -134,7 +80,7 @@ PublicKeyGeneration(int S[4][4], int Goppa[4][7], int P[7][7], int PublicKey[4][
 }
 
 //Encrypt Message with PublicKey
-Encryption(int m[4], int PublicKey[4][7], int Chiper[7]) {
+void Encryption(int m[4], int PublicKey[4][7], int Chiper[7]) {
 	int sum;
 	int error[7] = { 0,0,0,0,1,0,0 };
 	for (int i = 0; i < 7; i++) {
@@ -150,7 +96,7 @@ Encryption(int m[4], int PublicKey[4][7], int Chiper[7]) {
 }
 
 //Decrypt ChiperText with PrivateKey
-Decryption(int Chiper[7], int InverseP[7][7], int InverseS[4][4], int TransPoseParrityCheck[7][3]) {
+void Decryption(int Chiper[7], int InverseP[7][7], int InverseS[4][4], int TransPoseParrityCheck[7][3]) {
 	int TempMessage[7];
 	int ErrorMatrix[3];
 	int ErrorPosition = 0;
@@ -239,4 +185,58 @@ int GenerateInverse(int S[25][25], int size) {
 		for (int j = 0; j < size; j++)
 			Inverse[i][j] = ((TempInverse[i][j] + 2) % 2);
 	return Inverse;
+}
+
+int main(void) {
+
+	int Goppa[4][7] = { { 1,0,0,0,1,1,0 },{ 0,1,0,0,1,0,1 },{ 0,0,1,0,0,1,1 },{ 0,0,0,1,1,1,1 } };  //Goppa Code
+	int PublicKey[4][7]; // PublicKey
+	int Chiper[7]; //Chiper text
+	int text[4]; // Plain text
+	int(*P)[7] = MatrixPGeneration(); // Permutation Matrix as a Private Key
+	int(*S)[4] = MatrixSGeneration(); // Invertible Matrix as a Private Key
+	int(*ParrityCheck)[7] = MakeParrityCheckMatrix(Goppa); // ParrityCheck Matrix of Goppa Matrix for Decryption
+	int(*TransPoseMatrix)[3] = Transpose(ParrityCheck);
+
+	//Get InverseMatrix Of S(4X4) for Decryption
+	int InverseS[4][4];
+	int TempInverseS[25][25];
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			TempInverseS[i][j] = S[i][j];
+	int(*TempInverseS1)[25] = GenerateInverse(TempInverseS, 4);
+
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++) {
+			InverseS[i][j] = TempInverseS1[i][j];
+		}
+	//Get InverseMatrix Of P(7X7) for Decryption
+	int InverseP[7][7];
+	int TempInverseP[25][25];
+	for (int i = 0; i < 7; i++)
+		for (int j = 0; j < 7; j++)
+			TempInverseP[i][j] = P[i][j];
+	int(*TempInverseP1)[25] = GenerateInverse(TempInverseP, 7);
+
+	for (int i = 0; i < 7; i++)
+		for (int j = 0; j < 7; j++) {
+			InverseP[i][j] = TempInverseP1[i][j];
+		}
+
+	printf("Input Your Message : ");
+	for (int i = 0; i < 4; i++) {
+		scanf("%d", &text[i]);
+	}
+
+	PublicKeyGeneration(S, Goppa, P, PublicKey); //Generate Publickey using with P and S
+	Encryption(text, PublicKey, Chiper); //Encrypt Message with Publickey and intended Error
+
+	printf("\nGenerated Chipertext : ");
+	for (int i = 0; i < sizeof(Chiper) / sizeof(int); i++)
+		printf("%d ", Chiper[i]);
+	printf("\n\n");
+
+	Decryption(Chiper, InverseP, InverseS, TransPoseMatrix); // Decrypt ChiperText 
+
+	return 0;
 }
